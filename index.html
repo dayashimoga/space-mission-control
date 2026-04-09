@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Mission Control | QuickUtils</title>
+    <meta name="description" content="Cinematic 3D Space Mission Simulator and Solar System Explorer.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js + GSAP dependencies for Cinematic Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body class="mission-control-bg">
+    <nav class="navbar mission-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">🚀 MISSION.CTRL</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-hud" id="abortBtn" disabled>ABORT MISSION</button>
+            <button id="themeBtn" class="theme-btn" style="display:none;">🌙</button>
+        </div>
+    </div></nav>
+    <main class="app-container no-padding">
+        <div class="canvas-container">
+            <canvas id="spaceCanvas"></canvas>
+            
+            <div id="uiLayer" class="hud-layer">
+                <!-- Top HUD Bar -->
+                <div class="hud-top">
+                    <div class="hud-status">STATUS: <span id="statusTxt" class="text-neon-blue">PLANNING</span></div>
+                    <div class="hud-time">T<span id="missionTime">-00:00:00</span></div>
+                </div>
+
+                <!-- Left Telemetry Panel -->
+                <div class="hud-panel left-panel">
+                    <h3 class="panel-title">TELEMETRY DATA</h3>
+                    <div class="telemetry-grid">
+                        <div class="t-label">ALTITUDE</div><div class="t-val" id="t-alt">0 km</div>
+                        <div class="t-label">VELOCITY</div><div class="t-val" id="t-vel">0 km/s</div>
+                        <div class="t-label">FUEL</div><div class="t-val" id="t-fuel">100%</div>
+                        <div class="t-label">THROTTLE</div><div class="t-val" id="t-thr">0%</div>
+                        <div class="t-label">STAGE</div><div class="t-val" id="t-stg">PRE-FLIGHT</div>
+                    </div>
+                </div>
+
+                <!-- Right Target Info & Mission Planner -->
+                <div class="hud-panel right-panel" id="plannerPanel">
+                    <h3 class="panel-title">MISSION PLANNER</h3>
+                    <div id="targetInfo" class="target-info">
+                        <h2 id="sysTitle" class="holo-text">Select Destination</h2>
+                        <div class="info-stats" id="sysStats">
+                            <div class="text-muted text-sm mt-2">Click on any planet or moon in the 3D map to target it for the mission.</div>
+                        </div>
+                    </div>
+                    <button id="launchBtn" class="btn btn-primary btn-hud btn-lg w-100 glow-btn mt-4" disabled>INITIATE LAUNCH</button>
+                </div>
+
+                <!-- Bottom Timeline Camera Scrubber -->
+                <div class="hud-bottom">
+                    <div class="cam-controls">
+                        <button class="btn-hud sys-btn" data-cam="free">FREE CAM</button>
+                        <button class="btn-hud sys-btn active" data-cam="follow">TRACK ROCKET</button>
+                        <button class="btn-hud sys-btn" data-cam="cinematic">CINEMATIC</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+:root {
+    --hud-neon-blue: #0ff;
+    --hud-neon-red: #f04;
+    --hud-neon-amber: #f90;
+    --hud-neon-green: #0f0;
+    --hud-bg: rgba(0, 15, 30, 0.6);
+    --hud-border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+body.mission-control-bg {
+    overflow: hidden; 
+    background: #000;
+}
+
+.no-padding { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+
+.navbar.mission-nav {
+    background: rgba(0,0,0,0.8);
+    border-bottom: var(--hud-border);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.holo-text {
+    color: var(--hud-neon-blue);
+    text-shadow: 0 0 5px var(--hud-neon-blue), 0 0 10px var(--hud-neon-blue);
+    font-family: monospace;
+    letter-spacing: 2px;
+}
+
+.canvas-container {
+    position: relative;
+    width: 100vw;
+    height: calc(100vh - 60px);
+}
+
+#spaceCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.hud-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    z-index: 10;
+}
+
+.hud-top {
+    display: flex;
+    justify-content: space-between;
+    font-family: monospace;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.text-neon-blue { color: var(--hud-neon-blue); text-shadow: 0 0 8px var(--hud-neon-blue); }
+.text-neon-red { color: var(--hud-neon-red); text-shadow: 0 0 8px var(--hud-neon-red); }
+.text-neon-amber { color: var(--hud-neon-amber); text-shadow: 0 0 8px var(--hud-neon-amber); }
+.text-neon-green { color: var(--hud-neon-green); text-shadow: 0 0 8px var(--hud-neon-green); }
+#missionTime { color: var(--hud-neon-amber); margin-left: 10px; }
+
+.hud-panel {
+    background: var(--hud-bg);
+    border: var(--hud-border);
+    backdrop-filter: blur(5px);
+    padding: 15px;
+    box-shadow: 0 0 15px rgba(0,255,255,0.1) inset;
+    pointer-events: auto;
+    position: absolute;
+    border-radius: 4px;
+}
+.left-panel { top: 70px; left: 20px; width: 280px; }
+.right-panel { top: 70px; right: 20px; width: 320px; }
+
+.panel-title {
+    color: #a0faff;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(0,255,255,0.2);
+    padding-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 5px;
+    font-family: monospace;
+    font-size: 0.95rem;
+}
+.t-label { color: #88c0d0; }
+.t-val { color: #fff; text-align: right; font-weight: bold; }
+
+.btn-hud {
+    background: rgba(0, 255, 255, 0.1);
+    color: var(--hud-neon-blue);
+    border: 1px solid var(--hud-neon-blue);
+    font-family: monospace;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-hud:hover:not(:disabled) {
+    background: var(--hud-neon-blue);
+    color: #000;
+    box-shadow: 0 0 10px var(--hud-neon-blue);
+}
+.btn-hud:disabled {
+    border-color: #444; color: #555; background: transparent; cursor: not-allowed;
+}
+
+.btn-hud.active {
+    background: var(--hud-neon-blue);
+    color: #000;
+}
+
+.hud-bottom {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: auto;
+    background: var(--hud-bg);
+    padding: 10px 20px;
+    border: var(--hud-border);
+    border-radius: 20px;
+}
+
+.cam-controls {
+    display: flex;
+    gap: 10px;
+}
+.sys-btn { padding: 5px 15px; font-size: 0.8rem; border-radius: 12px; }
+
+/* CRT Scanline effect */
+.canvas-container::before {
+    content:""; position: absolute;
+    top:0;left:0;right:0;bottom:0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.info-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    margin-top: 15px;
+}
+.info-stats .stat-item {
+    display: flex; justify-content: space-between; border-bottom: 1px dotted rgba(255,255,255,0.1); padding-bottom: 2px;
+}
+.stat-item .stat-label { color: #aaa; }
+.stat-item .stat-value { color: #fff; text-align:right;}
+
+@media(max-width: 800px) {
+    .hud-panel { position: static; width: 100%; margin-top: 10px; }
+    .hud-layer { overflow-y: auto; pointer-events: auto; }
+    .canvas-container::before { display: none; }
+}
