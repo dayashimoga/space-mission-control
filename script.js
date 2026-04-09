@@ -113,6 +113,7 @@
     const sunGeo = new THREE.SphereGeometry(60, 64, 64);
     const sunMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
     const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+    sunMesh.userData = { name: 'Sun' };
     scene.add(sunMesh);
     celestialBodies['Sun'] = sunMesh;
     
