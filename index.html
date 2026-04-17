@@ -58,6 +58,14 @@
                     <div class="hud-time">T<span id="missionTime">-00:00:00</span></div>
                 </div>
 
+                <!-- Mission History Panel -->
+                <div class="hud-panel" id="historyPanel" style="position: absolute; top: 70px; right: 20px; width: 300px; background: rgba(10,15,30,0.85); border: 1px solid var(--neon-blue); padding: 15px; border-radius: 8px; display: none;">
+                    <h3 class="panel-title" style="margin-top: 0; font-size: 0.9rem; border-bottom: 1px solid rgba(0,255,255,0.2); padding-bottom: 5px;">MISSION LOG</h3>
+                    <div id="missionLog" style="height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #aaccff; margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
+                        <!-- Logs go here -->
+                    </div>
+                </div>
+
                 <!-- Left Telemetry Panel -->
                 <div class="hud-panel left-panel">
                     <h3 class="panel-title">TELEMETRY DATA</h3>

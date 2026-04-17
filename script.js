@@ -15,6 +15,20 @@
     const launchBtn = $('#launchBtn');
     const abortBtn = $('#abortBtn');
     const camBtns = document.querySelectorAll('.sys-btn');
+    const missionLog = $('#missionLog');
+    const historyPanel = $('#historyPanel');
+
+    function logEvent(msg) {
+        if(historyPanel) historyPanel.style.display = 'block';
+        const d = new Date();
+        const t = d.toISOString().split('T')[1].slice(0,8);
+        const logEntry = document.createElement('div');
+        logEntry.innerHTML = `<span style="color:#4466aa;">[${t}]</span> <span style="color:#eef;">${msg}</span>`;
+        if(missionLog) {
+            missionLog.appendChild(logEntry);
+            missionLog.scrollTop = missionLog.scrollHeight;
+        }
+    }
 
     let missionState = 'PLANNING'; // PLANNING, COUNTDOWN, LAUNCH, ASCENT, TRAVEL, ARRIVAL, LANDING, LANDED
     let targetObj = null;
@@ -372,9 +386,12 @@
         abortBtn.disabled = false;
         statusTxt.textContent = 'COUNTDOWN';
         statusTxt.className = 'text-neon-amber';
+        logEvent(`Launch Sequence Initiated. Target: ${targetObj ? Object.keys(celestialBodies).find(k => celestialBodies[k] === targetObj) : 'Unknown'}`);
         
         // Reset Rocket
         coreStage.visible = true;
+        coreStage.position.set(0, 0, 0);
+        coreStage.scale.set(1, 1, 1);
         rocket.position.copy(celestialBodies['Earth'].position);
         rocket.position.y += celestialBodies['Earth'].geometry.parameters.radius;
         rocket.rotation.set(0,0,0);
@@ -385,19 +402,77 @@
         const countInt = setInterval(() => {
             t--;
             missionTime.textContent = `T-00:00:0${t}`;
-            if(t > 0) playBeep();
+            if(t > 0) {
+                playBeep();
+                logEvent(`T-${t} seconds...`);
+            }
             if(t <= 0) {
                 clearInterval(countInt);
                 missionState = 'LAUNCH';
                 statusTxt.textContent = 'LIFTOFF';
                 statusTxt.className = 'text-neon-blue';
+                logEvent('LIFTOFF! We have liftoff.');
                 startEngineSound();
                 liftoffAnim();
             }
         }, 1000);
     });
     
-    abortBtn.addEventListener('click', () => { location.reload(); });
+    abortBtn.addEventListener('click', () => { 
+        if(abortBtn.textContent === 'RESTART SYSTEM') {
+            location.reload();
+            return;
+        }
+        if (missionState === 'ABORTED' || missionState === 'LANDED' || missionState === 'PLANNING' || missionState === 'COUNTDOWN') {
+            if(missionState === 'COUNTDOWN' || missionState === 'PLANNING') location.reload();
+            return;
+        }
+        
+        missionState = 'ABORTED';
+        logEvent('CRITICAL: MANUAL ABORT INITIATED.');
+        statusTxt.textContent = 'ABORTED';
+        statusTxt.className = 'text-neon-amber';
+        stopEngineSound();
+        tStg.textContent = 'LAUNCH ESCAPE SYSTEM DEPLOYED';
+        if (rocketTween) rocketTween.kill();
+        
+        // Explode main rocket stack
+        createExplosion(rocket.position);
+        setTimeout(() => createExplosion(rocket.position.clone().add(new THREE.Vector3(0,-3,0))), 100);
+        setTimeout(() => createExplosion(rocket.position.clone().add(new THREE.Vector3(0,3,0))), 200);
+        coreStage.visible = false;
+        
+        // Launch escape system shoots command module away
+        gsap.to(commandStage.position, {
+            y: commandStage.position.y + 30,
+            x: commandStage.position.x + (Math.random() - 0.5) * 15,
+            z: commandStage.position.z + (Math.random() - 0.5) * 15,
+            duration: 1.5,
+            ease: "power2.out",
+            onComplete: () => {
+                logEvent('Command Module separated. Deploying parachutes...');
+                tStg.textContent = 'CHUTES OPEN';
+                gsap.to(commandStage.position, {
+                    y: 0,
+                    duration: 6,
+                    ease: "power1.inOut",
+                    onUpdate: () => {
+                        missionData.alt *= 0.95;
+                        missionData.vel *= 0.9;
+                        updateTelemetry();
+                        rocket.position.y -= rocket.position.y * 0.05; // Fallback to ground
+                    },
+                    onComplete: () => {
+                        missionData.alt = 0; missionData.vel = 0;
+                        updateTelemetry();
+                        logEvent('Capsule touched down safely.');
+                        tStg.textContent = 'RECOVERY';
+                        abortBtn.textContent = 'RESTART SYSTEM';
+                    }
+                });
+            }
+        });
+    });
 
     let missionData = {
         alt: 0, vel: 0, fuel: 100, thrust: 0
@@ -428,14 +503,23 @@
             },
             onComplete: () => {
                 // STAGE SEPARATION
-                coreStage.visible = false;
+                logEvent('MECO (Main Engine Cutoff).');
+                logEvent('Stage 1 internal separation.');
                 createExplosion(rocket.position.clone().add(new THREE.Vector3(0,-2,0))); // smoke burst
+                
+                // Animate Core Stage falling away
+                gsap.to(coreStage.position, { y: coreStage.position.y - 15, duration: 3, ease: 'power2.in' });
+                gsap.to(coreStage.scale, { x: 0, y: 0, z: 0, duration: 3, ease: 'power2.in', onComplete: () => { coreStage.visible = false; }});
+
                 missionState = 'TRAVEL';
                 statusTxt.textContent = 'TRANSIT';
                 tStg.textContent = 'STAGE 2 BURN - INJECTION';
                 missionData.thrust = 0;
                 stopEngineSound();
-                setTimeout(() => startEngineSound(), 500); // 2nd stage engine
+                setTimeout(() => {
+                    startEngineSound();
+                    logEvent('Stage 2 ignition.');
+                }, 500); // 2nd stage engine
                 transitAnim();
             }
         });
@@ -461,6 +545,7 @@
             },
             onComplete: () => {
                 missionState = 'ARRIVAL';
+                logEvent('Arrived at target orbit. Coasting phase.');
                 statusTxt.textContent = 'ARRIVAL';
                 tStg.textContent = 'COASTING';
                 stopEngineSound();
@@ -472,6 +557,7 @@
     function landingAnim() {
         missionState = 'LANDING';
         statusTxt.textContent = 'LANDING';
+        logEvent('Initiating retro-descent landing procedure.');
         tStg.textContent = 'RETRO-DESCENT';
         startEngineSound();
         missionData.thrust = 60;
